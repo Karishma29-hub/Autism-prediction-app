@@ -94,16 +94,12 @@ if st.button("Predict"):
         'result': result
     }])
 
-    # 🔥 CRITICAL FIX
-    input_df = input_df.reindex(columns=model.feature_names_in_)
+    prediction = model.predict(input_scaled)[0]
+label = label_encoder.inverse_transform([prediction])[0]
 
-    st.write("Final input shape:", input_df.shape)
+st.write("Model Output:", label)
 
-    prediction = model.predict(input_df)
-
-    st.write("Prediction value:", prediction[0])
-
-    if prediction[0] == 1:
-        st.error("Autism Traits Detected")
-    else:
-        st.success("No Autism Traits Detected")
+if label.lower() in ["autism", "yes", "1", "positive"]:
+    st.error("❌ Autism Traits Detected")
+else:
+    st.success("✅ No Autism Traits Detected")
