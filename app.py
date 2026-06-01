@@ -91,7 +91,7 @@ if st.button("Predict"):
         'relation': relation_enc
     }])
 
-    prediction = model.predict(input_df)
+prediction = model.predict(input_df.values)
 
     if prediction[0] == 1:
         st.error("Autism Traits Detected")
