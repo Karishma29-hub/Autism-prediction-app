@@ -34,7 +34,8 @@ ethnicity = st.selectbox(
 
 jaundice = st.selectbox("Jaundice", ['no', 'yes'])
 
-autism = st.selectbox(
+# ⚠️ FIXED SPELLING (austim from your encoder)
+austim = st.selectbox(
     "Family Member with Autism",
     ['no', 'yes']
 )
@@ -63,11 +64,11 @@ result = st.number_input(
 
 if st.button("Predict"):
 
-    # Encode categorical values
+    # Encode categorical values (FIXED KEY NAME HERE)
     gender_enc = encoders['gender'].transform([gender])[0]
     ethnicity_enc = encoders['ethnicity'].transform([ethnicity])[0]
     jaundice_enc = encoders['jaundice'].transform([jaundice])[0]
-    autism_enc = encoders['autism'].transform([autism])[0]
+    austim_enc = encoders['austim'].transform([austim])[0]
     country_enc = encoders['contry_of_res'].transform([country])[0]
     used_app_enc = encoders['used_app_before'].transform([used_app_before])[0]
     relation_enc = encoders['relation'].transform([relation])[0]
@@ -88,7 +89,7 @@ if st.button("Predict"):
         'gender': gender_enc,
         'ethnicity': ethnicity_enc,
         'jaundice': jaundice_enc,
-        'autism': autism_enc,
+        'austim': austim_enc,
         'country_of_res': country_enc,
         'used_app_before': used_app_enc,
         'relation': relation_enc
@@ -96,16 +97,15 @@ if st.button("Predict"):
 
     # DEBUG INFO (VERY IMPORTANT)
     st.write("Model expects features:", model.n_features_in_)
-    st.write("Your input shape:", input_df.shape)
-    st.write("Input columns:", list(input_df.columns))
+    st.write("Input shape:", input_df.shape)
+    st.write("Columns:", list(input_df.columns))
 
-    # Predict
+    # Prediction
     prediction = model.predict(input_df)
 
-    # Show raw output (IMPORTANT FOR CHECKING 0/1 MEANING)
     st.write("Prediction value:", prediction[0])
 
-    # RESULT LOGIC
+    # RESULT LOGIC (IMPORTANT: CONFIRM 0/1 MEANING IN YOUR MODEL)
     if prediction[0] == 1:
         st.error("Autism Traits Detected")
     else:
