@@ -74,39 +74,24 @@ if st.button("Predict"):
     relation_enc = encoders['relation'].transform([relation])[0]
 
     # Create input dataframe
-    input_df = pd.DataFrame([{
-        'A1_Score': scores['A1_Score'],
-        'A2_Score': scores['A2_Score'],
-        'A3_Score': scores['A3_Score'],
-        'A4_Score': scores['A4_Score'],
-        'A5_Score': scores['A5_Score'],
-        'A6_Score': scores['A6_Score'],
-        'A7_Score': scores['A7_Score'],
-        'A8_Score': scores['A8_Score'],
-        'A9_Score': scores['A9_Score'],
-        'A10_Score': scores['A10_Score'],
-        'age': age,
-        'gender': gender_enc,
-        'ethnicity': ethnicity_enc,
-        'jaundice': jaundice_enc,
-        'austim': austim_enc,
-        'country_of_res': country_enc,
-        'used_app_before': used_app_enc,
-        'relation': relation_enc
-    }])
-
-    # DEBUG INFO (VERY IMPORTANT)
-    st.write("Model expects features:", model.n_features_in_)
-    st.write("Input shape:", input_df.shape)
-    st.write("Columns:", list(input_df.columns))
-
-    # Prediction
-    prediction = model.predict(input_df)
-
-    st.write("Prediction value:", prediction[0])
-
-    # RESULT LOGIC (IMPORTANT: CONFIRM 0/1 MEANING IN YOUR MODEL)
-    if prediction[0] == 1:
-        st.error("Autism Traits Detected")
-    else:
-        st.success("No Autism Traits Detected")
+input_df = pd.DataFrame([{
+    'A1_Score': scores['A1_Score'],
+    'A2_Score': scores['A2_Score'],
+    'A3_Score': scores['A3_Score'],
+    'A4_Score': scores['A4_Score'],
+    'A5_Score': scores['A5_Score'],
+    'A6_Score': scores['A6_Score'],
+    'A7_Score': scores['A7_Score'],
+    'A8_Score': scores['A8_Score'],
+    'A9_Score': scores['A9_Score'],
+    'A10_Score': scores['A10_Score'],
+    'age': age,
+    'gender': gender_enc,
+    'ethnicity': ethnicity_enc,
+    'jaundice': jaundice_enc,
+    'austim': austim_enc,
+    'country_of_res': country_enc,
+    'used app before': used_app_enc,
+    'relation': relation_enc,
+    'result': result                  
+}])
