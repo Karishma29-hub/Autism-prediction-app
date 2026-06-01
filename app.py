@@ -64,7 +64,6 @@ result = st.number_input(
 
 if st.button("Predict"):
 
-    # Encode categorical values (FIXED KEY NAME HERE)
     gender_enc = encoders['gender'].transform([gender])[0]
     ethnicity_enc = encoders['ethnicity'].transform([ethnicity])[0]
     jaundice_enc = encoders['jaundice'].transform([jaundice])[0]
@@ -73,25 +72,38 @@ if st.button("Predict"):
     used_app_enc = encoders['used_app_before'].transform([used_app_before])[0]
     relation_enc = encoders['relation'].transform([relation])[0]
 
-    # Create input dataframe
-input_df = pd.DataFrame([{
-    'A1_Score': scores['A1_Score'],
-    'A2_Score': scores['A2_Score'],
-    'A3_Score': scores['A3_Score'],
-    'A4_Score': scores['A4_Score'],
-    'A5_Score': scores['A5_Score'],
-    'A6_Score': scores['A6_Score'],
-    'A7_Score': scores['A7_Score'],
-    'A8_Score': scores['A8_Score'],
-    'A9_Score': scores['A9_Score'],
-    'A10_Score': scores['A10_Score'],
-    'age': age,
-    'gender': gender_enc,
-    'ethnicity': ethnicity_enc,
-    'jaundice': jaundice_enc,
-    'austim': austim_enc,
-    'country_of_res': country_enc,
-    'used app before': used_app_enc,
-    'relation': relation_enc,
-    'result': result                  
-}])
+    input_df = pd.DataFrame([{
+        'A1_Score': scores['A1_Score'],
+        'A2_Score': scores['A2_Score'],
+        'A3_Score': scores['A3_Score'],
+        'A4_Score': scores['A4_Score'],
+        'A5_Score': scores['A5_Score'],
+        'A6_Score': scores['A6_Score'],
+        'A7_Score': scores['A7_Score'],
+        'A8_Score': scores['A8_Score'],
+        'A9_Score': scores['A9_Score'],
+        'A10_Score': scores['A10_Score'],
+        'age': age,
+        'gender': gender_enc,
+        'ethnicity': ethnicity_enc,
+        'jaundice': jaundice_enc,
+        'austim': austim_enc,
+        'country_of_res': country_enc,
+        'used app before': used_app_enc,   # ⚠️ EXACT MATCH
+        'relation': relation_enc,
+        'result': result
+    }])
+
+    # 🔥 CRITICAL FIX
+    input_df = input_df.reindex(columns=model.feature_names_in_)
+
+    st.write("Final input shape:", input_df.shape)
+
+    prediction = model.predict(input_df)
+
+    st.write("Prediction value:", prediction[0])
+
+    if prediction[0] == 1:
+        st.error("Autism Traits Detected")
+    else:
+        st.success("No Autism Traits Detected")
