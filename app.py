@@ -1,77 +1,41 @@
 import streamlit as st
-import pandas as pd
+import numpy as np
 import pickle
+import os
 
-# Load model
-with open("best_model.pkl", "rb") as f:
-    model = pickle.load(f)
+# ---------------- Load files ----------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Load encoders
-with open("encoders.pkl", "rb") as f:
-    encoders = pickle.load(f)
+model = pickle.load(open(os.path.join(BASE_DIR, "model.pkl"), "rb"))
+scaler = pickle.load(open(os.path.join(BASE_DIR, "scaler.pkl"), "rb"))
+label_encoder = pickle.load(open(os.path.join(BASE_DIR, "label_encoder.pkl"), "rb"))
 
-st.title("Autism Prediction System")
+# ---------------- UI ----------------
+st.title("🧠 Autism Prediction App")
 
-# ---------------- INPUT SECTION ---------------- #
+# ---------------- INPUTS (MUST BE ABOVE BUTTON) ----------------
+a1 = st.number_input("A1 Score", 0, 1)
+a2 = st.number_input("A2 Score", 0, 1)
+a3 = st.number_input("A3 Score", 0, 1)
+a4 = st.number_input("A4 Score", 0, 1)
+a5 = st.number_input("A5 Score", 0, 1)
+a6 = st.number_input("A6 Score", 0, 1)
+a7 = st.number_input("A7 Score", 0, 1)
+a8 = st.number_input("A8 Score", 0, 1)
+a9 = st.number_input("A9 Score", 0, 1)
+a10 = st.number_input("A10 Score", 0, 1)
+age = st.number_input("Age", 1, 100)
 
-scores = {}
-for i in range(1, 11):
-    scores[f"A{i}_Score"] = st.selectbox(
-        f"A{i} Score",
-        [0, 1]
-    )
-
-age = st.number_input("Age", min_value=1, max_value=100)
-
-gender = st.selectbox("Gender", ['f', 'm'])
-
-ethnicity = st.selectbox(
-    "Ethnicity",
-    ['Asian', 'Black', 'Hispanic', 'Latino',
-     'Middle Eastern ', 'Others', 'Pasifika',
-     'South Asian', 'Turkish', 'White-European']
-)
-
-jaundice = st.selectbox("Jaundice", ['no', 'yes'])
-
-# ⚠️ FIXED SPELLING (austim from your encoder)
-austim = st.selectbox(
-    "Family Member with Autism",
-    ['no', 'yes']
-)
-
-country = st.selectbox(
-    "Country",
-    list(encoders['contry_of_res'].classes_)
-)
-
-used_app_before = st.selectbox(
-    "Used App Before",
-    ['no', 'yes']
-)
-
-relation = st.selectbox(
-    "Relation",
-    ['Others', 'Self']
-)
-
-result = st.number_input(
-    "Screening Result",
-    min_value=0.0
-)
-
-# ---------------- PREDICTION ---------------- #
-
+# ---------------- PREDICT BUTTON ----------------
 if st.button("Predict"):
 
+    # NOW VARIABLES EXIST → NO ERROR
     input_data = np.array([[a1, a2, a3, a4, a5,
                             a6, a7, a8, a9, a10,
                             age]])
 
-    # SCALE HERE (IMPORTANT)
     input_scaled = scaler.transform(input_data)
 
-    # PREDICT HERE
     prediction = model.predict(input_scaled)[0]
 
     label = label_encoder.inverse_transform([prediction])[0]
