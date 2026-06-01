@@ -92,8 +92,7 @@ if st.button("Predict"):
     }])
 
 prediction = model.predict(input_df.values)
-
-    if prediction[0] == 1:
+if prediction[0] == 1:
         st.error("Autism Traits Detected")
-    else:
+else:
         st.success("No Autism Traits Detected")
