@@ -1,46 +1,109 @@
 import streamlit as st
-import numpy as np
+import pandas as pd
 import pickle
-import os
 
-# ---------------- Load files ----------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Load model
+with open("best_model.pkl", "rb") as f:
+    model = pickle.load(f)
 
-model = pickle.load(open(os.path.join(BASE_DIR, "model.pkl"), "rb"))
-scaler = pickle.load(open(os.path.join(BASE_DIR, "scaler.pkl"), "rb"))
-label_encoder = pickle.load(open(os.path.join(BASE_DIR, "label_encoder.pkl"), "rb"))
+# Load encoders
+with open("encoders.pkl", "rb") as f:
+    encoders = pickle.load(f)
 
-# ---------------- UI ----------------
-st.title("🧠 Autism Prediction App")
+st.title("Autism Prediction System")
 
-# ---------------- INPUTS (MUST BE ABOVE BUTTON) ----------------
-a1 = st.number_input("A1 Score", 0, 1)
-a2 = st.number_input("A2 Score", 0, 1)
-a3 = st.number_input("A3 Score", 0, 1)
-a4 = st.number_input("A4 Score", 0, 1)
-a5 = st.number_input("A5 Score", 0, 1)
-a6 = st.number_input("A6 Score", 0, 1)
-a7 = st.number_input("A7 Score", 0, 1)
-a8 = st.number_input("A8 Score", 0, 1)
-a9 = st.number_input("A9 Score", 0, 1)
-a10 = st.number_input("A10 Score", 0, 1)
-age = st.number_input("Age", 1, 100)
+# ---------------- INPUT SECTION ---------------- #
 
-# ---------------- PREDICT BUTTON ----------------
+scores = {}
+for i in range(1, 11):
+    scores[f"A{i}_Score"] = st.selectbox(
+        f"A{i} Score",
+        [0, 1]
+    )
+
+age = st.number_input("Age", min_value=1, max_value=100)
+
+gender = st.selectbox("Gender", ['f', 'm'])
+
+ethnicity = st.selectbox(
+    "Ethnicity",
+    ['Asian', 'Black', 'Hispanic', 'Latino',
+     'Middle Eastern ', 'Others', 'Pasifika',
+     'South Asian', 'Turkish', 'White-European']
+)
+
+jaundice = st.selectbox("Jaundice", ['no', 'yes'])
+
+# ⚠️ FIXED SPELLING (austim from your encoder)
+austim = st.selectbox(
+    "Family Member with Autism",
+    ['no', 'yes']
+)
+
+country = st.selectbox(
+    "Country",
+    list(encoders['contry_of_res'].classes_)
+)
+
+used_app_before = st.selectbox(
+    "Used App Before",
+    ['no', 'yes']
+)
+
+relation = st.selectbox(
+    "Relation",
+    ['Others', 'Self']
+)
+
+result = st.number_input(
+    "Screening Result",
+    min_value=0.0
+)
+
+# ---------------- PREDICTION ---------------- #
+
 if st.button("Predict"):
 
-    # NOW VARIABLES EXIST → NO ERROR
-    input_data = np.array([[a1, a2, a3, a4, a5,
-                            a6, a7, a8, a9, a10,
-                            age]])
+    gender_enc = encoders['gender'].transform([gender])[0]
+    ethnicity_enc = encoders['ethnicity'].transform([ethnicity])[0]
+    jaundice_enc = encoders['jaundice'].transform([jaundice])[0]
+    austim_enc = encoders['austim'].transform([austim])[0]
+    country_enc = encoders['contry_of_res'].transform([country])[0]
+    used_app_enc = encoders['used_app_before'].transform([used_app_before])[0]
+    relation_enc = encoders['relation'].transform([relation])[0]
 
-    input_scaled = scaler.transform(input_data)
+    input_df = pd.DataFrame([{
+        'A1_Score': scores['A1_Score'],
+        'A2_Score': scores['A2_Score'],
+        'A3_Score': scores['A3_Score'],
+        'A4_Score': scores['A4_Score'],
+        'A5_Score': scores['A5_Score'],
+        'A6_Score': scores['A6_Score'],
+        'A7_Score': scores['A7_Score'],
+        'A8_Score': scores['A8_Score'],
+        'A9_Score': scores['A9_Score'],
+        'A10_Score': scores['A10_Score'],
+        'age': age,
+        'gender': gender_enc,
+        'ethnicity': ethnicity_enc,
+        'jaundice': jaundice_enc,
+        'austim': austim_enc,
+        'country_of_res': country_enc,
+        'used app before': used_app_enc,   # ⚠️ EXACT MATCH
+        'relation': relation_enc,
+        'result': result
+    }])
 
-    prediction = model.predict(input_scaled)[0]
+    # 🔥 CRITICAL FIX
+    input_df = input_df.reindex(columns=model.feature_names_in_)
 
-    label = label_encoder.inverse_transform([prediction])[0]
+    st.write("Final input shape:", input_df.shape)
 
-    if str(label).lower() in ["autism", "yes", "1"]:
-        st.error("❌ Autism Traits Detected")
+    prediction = model.predict(input_df)
+
+    st.write("Prediction value:", prediction[0])
+
+    if prediction[0] == 1:
+        st.error("Autism Traits Detected")
     else:
-        st.success("✅ No Autism Traits Detected")
+        st.success("No Autism Traits Detected")
